@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Track Requests - AITAM SCUP</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar dynamically loaded -->
+    <div id="sidebarContainer"></div>
+
+    <main class="main-content">
+      <div class="top-header">
+        <div class="page-title-section">
+          <h1>Track & Manage Requests</h1>
+          <p id="portalSubText">Review progress on leave applications and maintenance tickets.</p>
+        </div>
+      </div>
+
+      <!-- Filters Row -->
+      <div class="glass-card mb-4">
+        <div class="row g-3 align-items-center">
+          <div class="col-md-5">
+            <label class="form-label-custom mb-1" for="searchInput">Search Queries</label>
+            <div class="input-group">
+              <span class="input-group-text bg-transparent border-end-0 text-muted"><i class="bi bi-search"></i></span>
+              <input type="text" class="form-input-custom border-start-0 ps-0 py-2" id="searchInput" placeholder="Search by ID, location, or reason..." onkeyup="filterData()">
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label-custom mb-1" for="statusFilter">Filter Status</label>
+            <select class="form-input-custom py-2" id="statusFilter" onchange="filterData()">
+              <option value="All">All Statuses</option>
+              <option value="Pending">Pending Only</option>
+              <option value="Approved">Approved / Resolved</option>
+              <option value="Rejected">Rejected</option>
+            </select>
+          </div>
+          <div class="col-md-3 text-md-end mt-md-4">
+            <button class="btn btn-premium py-2 w-100" onclick="clearFilters()"><i class="bi bi-x-circle me-1"></i> Reset Filters</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Leave Requests Container -->
+      <div class="glass-card mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h4 class="fw-extrabold mb-0"><i class="bi bi-calendar2-range text-primary me-2"></i>Leave Applications</h4>
+          <span class="badge-custom resolved py-1 px-3" id="leaveCount">0 Applications</span>
+        </div>
+        <div class="table-responsive-custom">
+          <table class="table-custom">
+            <thead>
+              <tr>
+                <th>Applicant ID</th>
+                <th>Dept</th>
+                <th>Duration</th>
+                <th>Reason</th>
+                <th>Status</th>
+                <th class="text-end" id="leaveActionsHeader">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="leaveTableBody">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Maintenance Requests Container -->
+      <div class="glass-card">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h4 class="fw-extrabold mb-0"><i class="bi bi-tools text-warning me-2"></i>Maintenance Tickets</h4>
+          <span class="badge-custom resolved py-1 px-3" id="complaintCount" style="background: rgba(245, 158, 11, 0.15); color: var(--warning-color);">0 Tickets</span>
+        </div>
+        <div class="table-responsive-custom">
+          <table class="table-custom">
+            <thead>
+              <tr>
+                <th>Ticket ID</th>
+                <th>Location</th>
+                <th>Category</th>
+                <th>Description</th>
+                <th>Status</th>
+                <th class="text-end" id="complaintActionsHeader">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="complaintsTableBody">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Global App JS -->
+  <script src="JS/app.js"></script>
+  <!-- Page JS -->
+  <script src="JS/status.js"></script>
+</body>
+</html>

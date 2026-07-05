@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AI Feedback - AITAM SCUP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar dynamically loaded -->
+    <div id="sidebarContainer"></div>
+
+    <main class="main-content">
+      <div class="top-header">
+        <div class="page-title-section">
+          <h1>AI Sentiment Feedback Analyzer</h1>
+          <p>Provide feedback about your hostel, classes, or campus life and let our AI analyze its sentiment.</p>
+        </div>
+      </div>
+
+      <div class="row g-4">
+        <!-- Input section -->
+        <div class="col-lg-7">
+          <div class="glass-card h-100 shadow-lg">
+            <h4 class="fw-extrabold mb-3"><i class="bi bi-chat-left-text text-primary me-2"></i>Submit Feedback</h4>
+            <p class="text-secondary text-sm mb-4">Our sentiment analyzer will automatically parse words to evaluate customer satisfaction indicators.</p>
+
+            <form id="feedbackForm" onsubmit="event.preventDefault(); analyzeFeedback();">
+              <div class="form-group-custom">
+                <label for="feedbackText" class="form-label-custom">Write your feedback</label>
+                <textarea id="feedbackText" class="form-input-custom" rows="6" placeholder="e.g. The laboratory computer chairs are very comfortable and helpful, but the Wi-Fi speed is poor and slow..." required></textarea>
+              </div>
+
+              <div class="d-flex justify-content-between align-items-center mt-4">
+                <button type="button" class="btn btn-secondary-custom px-4" onclick="document.getElementById('feedbackText').value=''">Clear</button>
+                <button type="submit" class="btn btn-premium px-5"><i class="bi bi-cpu me-2"></i>Analyze Sentiment</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Indicator section -->
+        <div class="col-lg-5">
+          <div class="glass-card h-100 shadow-lg text-center d-flex flex-column align-items-center justify-content-center py-4">
+            <h5 class="fw-extrabold mb-4 text-secondary">Sentiment Gauge</h5>
+            
+            <div class="sentiment-container">
+              <div class="sentiment-meter-wrapper">
+                <svg class="sentiment-svg" viewBox="0 0 160 160">
+                  <circle class="sentiment-bg-circle" cx="80" cy="80" r="70"></circle>
+                  <circle class="sentiment-progress-circle" id="sentimentCircle" cx="80" cy="80" r="70" stroke-dasharray="440" stroke-dashoffset="440"></circle>
+                </svg>
+                <div class="sentiment-value" id="sentimentValue">
+                  0%
+                  <span id="sentimentLabel">Idle</span>
+                </div>
+              </div>
+
+              <div id="sentimentResult" class="w-100 mt-2 px-3">
+                <div class="alert alert-light border py-2 text-center text-muted">
+                  <i class="bi bi-info-circle me-1"></i> Enter text and analyze.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- History table section -->
+        <div class="col-12 mt-4">
+          <div class="glass-card shadow-lg">
+            <h4 class="fw-extrabold mb-4"><i class="bi bi-clock-history text-primary me-2"></i>Analysis History</h4>
+            <div class="table-responsive-custom">
+              <table class="table-custom">
+                <thead>
+                  <tr>
+                    <th>Feedback Snippet</th>
+                    <th>Sentiment Score</th>
+                    <th>Result Category</th>
+                    <th class="text-end">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="feedbackHistoryBody">
+                  <!-- History rows rendered dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Global App JS -->
+  <script src="JS/app.js"></script>
+  <!-- Page Logic script -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      loadHistory();
+    });
+
+    function analyzeFeedback() {
+      const text = document.getElementById("feedbackText").value.trim();
+      const textLower = text.toLowerCase();
+
+      const positiveWords = ["good", "great", "awesome", "excellent", "happy", "amazing", "helpful", "comfortable", "fast", "love", "satisfied"];
+      const negativeWords = ["bad", "poor", "terrible", "slow", "worst", "rude", "unhelpful", "broken", "hate", "uncomfortable"];
+
+      let score = 0;
+      let posCount = 0;
+      let negCount = 0;
+
+      positiveWords.forEach(word => {
+        if (textLower.includes(word)) {
+          score++;
+          posCount++;
+        }
+      });
+
+      negativeWords.forEach(word => {
+        if (textLower.includes(word)) {
+          score--;
+          negCount++;
+        }
+      });
+
+      let category = "Neutral";
+      let percentage = 50;
+      let colorClass = "var(--warning-color)"; // Default warning/neutral
+      let emoji = "😐";
+      let alertClass = "alert-warning";
+
+      if (score > 0) {
+        category = "Positive";
+        percentage = 70 + Math.min(score * 5, 30); // 70% to 100%
+        colorClass = "var(--success-color)";
+        emoji = "😊";
+        alertClass = "alert-success";
+      } else if (score < 0) {
+        category = "Negative";
+        percentage = Math.max(30 - Math.abs(score) * 5, 10); // 10% to 30%
+        colorClass = "var(--danger-color)";
+        emoji = "😟";
+        alertClass = "alert-danger";
+      }
+
+      // Animate the progress circle
+      const circle = document.getElementById("sentimentCircle");
+      const circumference = 440; // 2 * PI * r
+      const offset = circumference - (circumference * percentage) / 100;
+      
+      circle.style.stroke = colorClass;
+      circle.style.strokeDashoffset = offset;
+
+      // Update text indicators
+      document.getElementById("sentimentValue").innerHTML = `${percentage}% <span id="sentimentLabel" style="color: ${colorClass}; font-weight:700;">${category}</span>`;
+      
+      document.getElementById("sentimentResult").innerHTML = `
+        <div class="alert ${alertClass} border py-3">
+          <h5 class="fw-bold mb-1">${emoji} ${category} Sentiment</h5>
+          <p class="text-sm mb-0">Analyzed ${posCount} positive and ${negCount} negative keywords.</p>
+        </div>
+      `;
+
+      // Save to localStorage history
+      saveToHistory(text, score, category, emoji);
+    }
+
+    function saveToHistory(text, score, category, emoji) {
+      let history = JSON.parse(localStorage.getItem("feedbackHistory")) || [];
+      const newLog = {
+        id: Date.now(),
+        text: text,
+        score: score,
+        category: category,
+        emoji: emoji
+      };
+      
+      history.push(newLog);
+      localStorage.setItem("feedbackHistory", JSON.stringify(history));
+      loadHistory();
+    }
+
+    function loadHistory() {
+      const historyBody = document.getElementById("feedbackHistoryBody");
+      const history = JSON.parse(localStorage.getItem("feedbackHistory")) || [];
+
+      historyBody.innerHTML = "";
+
+      if (history.length === 0) {
+        historyBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-muted"><i class="bi bi-clock-history me-2"></i>No feedback logs yet.</td></tr>`;
+        return;
+      }
+
+      // Limit to last 5, show newest first
+      history.slice(-5).reverse().forEach((log) => {
+        let badgeColor = "pending";
+        if (log.category === "Positive") badgeColor = "approved";
+        if (log.category === "Negative") badgeColor = "rejected";
+
+        const row = `
+          <tr>
+            <td class="text-wrap" style="max-width: 400px;">"${log.text.substring(0, 100)}${log.text.length > 100 ? "..." : ""}"</td>
+            <td><strong>Score: ${log.score}</strong></td>
+            <td><span class="badge-custom ${badgeColor}">${log.emoji} ${log.category}</span></td>
+            <td class="text-end">
+              <button class="btn btn-sm btn-outline-danger border-0" onclick="deleteHistoryItem(${log.id})"><i class="bi bi-trash"></i></button>
+            </td>
+          </tr>
+        `;
+        historyBody.innerHTML += row;
+      });
+    }
+
+    function deleteHistoryItem(id) {
+      let history = JSON.parse(localStorage.getItem("feedbackHistory")) || [];
+      history = history.filter(log => log.id !== id);
+      localStorage.setItem("feedbackHistory", JSON.stringify(history));
+      loadHistory();
+    }
+  </script>
+</body>
+</html>
